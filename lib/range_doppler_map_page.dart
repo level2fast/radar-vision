@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+double seriesAnimation = 1500;
+late TooltipBehavior _tooltipBehavior;
+
 class RangeDopplerMapPage extends StatelessWidget {
+  void initState() {
+    _tooltipBehavior = TooltipBehavior(enable: true, shouldAlwaysShow: true);
+  }
+
   @override
   Widget build(BuildContext context) {
+    initState();
     return Scaffold(
         body: Center(
             child: Container(
@@ -37,8 +45,10 @@ class RangeDopplerMapPage extends StatelessWidget {
                     title: ChartTitle(text: 'Range vs. Velocity'),
                     // Enable legend
                     legend: Legend(isVisible: true),
+                    tooltipBehavior: _tooltipBehavior,
                     series: <ScatterSeries<TargetData, double>>[
           ScatterSeries<TargetData, double>(
+              enableTooltip: true,
               // Bind data source
               dataSource: <TargetData>[
                 TargetData(0, 5),

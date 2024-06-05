@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:radar_vision/range_doppler_map_page.dart';
 import 'package:radar_vision/range_angle_map_page.dart';
+import 'package:radar_vision/radar_point_cloud_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
+  var connected = false;
   void getNext() {
     current = WordPair.random();
     notifyListeners();
@@ -36,10 +38,12 @@ class MyAppState extends ChangeNotifier {
 
   var favorites = <WordPair>[];
 
-  void toggleFavorite() {
+  void connectBle() {
     if (favorites.contains(current)) {
+      connected = true;
       favorites.remove(current);
     } else {
+      connected = false;
       favorites.add(current);
     }
     notifyListeners();
@@ -62,19 +66,16 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = GeneratorPage();
+        page = ConnectPage();
         break;
       case 1:
-        page = FavoritesPage();
-        break;
-      case 2:
         page = RangeDopplerMapPage();
         break;
-      case 3:
+      case 2:
         page = RangeAngleMapPage();
         break;
-      case 4:
-        page = Placeholder();
+      case 3:
+        page = RadarPointCloudPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -92,10 +93,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
                     label: Text('Home'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text('Favorites'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.map),
@@ -131,101 +128,42 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class GeneratorPage extends StatelessWidget {
+class ConnectPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
-
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
+    var is_connected = appState.connected;
+    var button_text = "CONNECT";
+    if (is_connected) {
+      // sets ble icon to blue
+      // update button text to say paired
+      button_text = "PAIRED";
     }
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          BigCard(pair: pair),
           SizedBox(height: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  appState.toggleFavorite();
+                  appState.connectBle();
                 },
-                icon: Icon(icon),
-                label: Text('Like'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                },
-                child: Text('Next'),
+                icon: Icon(Icons.bluetooth),
+                label: Text(button_text),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: is_connected
+                      ? Colors.lightBlueAccent
+                      : Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ...
-
-// ...
-
-class FavoritesPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-
-    if (appState.favorites.isEmpty) {
-      return Center(
-        child: Text('No favorites yet.'),
-      );
-    }
-
-    return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text('You have '
-              '${appState.favorites.length} favorites:'),
-        ),
-        for (var pair in appState.favorites)
-          ListTile(
-            leading: Icon(Icons.favorite),
-            title: Text(pair.asLowerCase),
-          ),
-      ],
-    );
-  }
-}
-
-class BigCard extends StatelessWidget {
-  const BigCard({
-    super.key,
-    required this.pair,
-  });
-
-  final WordPair pair;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.displayMedium!.copyWith(
-      color: theme.colorScheme.onPrimary,
-    );
-    return Card(
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Text("${pair.first} ${pair.second}", style: style),
       ),
     );
   }
