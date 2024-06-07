@@ -1,11 +1,16 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:radar_vision/range_doppler_map_page.dart';
 import 'package:radar_vision/range_angle_map_page.dart';
-import 'package:radar_vision/radar_point_cloud_page.dart';
+import 'package:radar_vision/coordinates_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -29,24 +34,20 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-  var connected = false;
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
+  double _x = 0.0;
+  double get x => _x;
 
-  var favorites = <WordPair>[];
+  double _y = 0.0;
+  double get y => _y;
 
-  void connectBle() {
-    if (favorites.contains(current)) {
-      connected = true;
-      favorites.remove(current);
-    } else {
-      connected = false;
-      favorites.add(current);
-    }
-    notifyListeners();
+  double _z = 0.0;
+  double get z => _z;
+
+  void setCoordinates(double xval, double yval, double zval) {
+    _x = xval;
+    _y = yval;
+    _z = zval;
+    // notifyListeners();
   }
 }
 // ...
@@ -66,17 +67,15 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = ConnectPage();
-        break;
-      case 1:
         page = RangeDopplerMapPage();
         break;
-      case 2:
-        page = RangeAngleMapPage();
+      // case 1:
+      //   page = RangeAngleMapPage();
+      //   break;
+      case 1:
+        page = SensorData();
         break;
-      case 3:
-        page = RadarPointCloudPage();
-        break;
+
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -91,20 +90,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 extended: constraints.maxWidth >= 600,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
-                  ),
-                  NavigationRailDestination(
                     icon: Icon(Icons.map),
                     label: Text('Range Doppler Map'),
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.text_rotation_angledown),
-                    label: Text('Angle Plot'),
-                  ),
+                  // NavigationRailDestination(
+                  //   icon: Icon(Icons.text_rotation_angledown),
+                  //   label: Text('Angle Plot'),
+                  // ),
                   NavigationRailDestination(
                     icon: Icon(Icons.scatter_plot),
-                    label: Text('Point Cloud Plot'),
+                    label: Text('Sensor Data'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
@@ -125,46 +120,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     });
-  }
-}
-
-class ConnectPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var pair = appState.current;
-    var is_connected = appState.connected;
-    var button_text = "CONNECT";
-    if (is_connected) {
-      // sets ble icon to blue
-      // update button text to say paired
-      button_text = "PAIRED";
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.connectBle();
-                },
-                icon: Icon(Icons.bluetooth),
-                label: Text(button_text),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: is_connected
-                      ? Colors.lightBlueAccent
-                      : Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }

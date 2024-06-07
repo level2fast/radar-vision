@@ -1,4 +1,4 @@
-package com.example.radar_vision
+package pfllc.radarvision.app
 
 import io.flutter.embedding.android.FlutterActivity
 

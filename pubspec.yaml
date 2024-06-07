@@ -16,8 +16,9 @@ dependencies:
   provider: ^6.0.0
   syncfusion_flutter_charts: ^25.2.6
   flutter_echarts: ^2.5.0
-  simple_3d: ^13.1.1
-  simple_3d_renderer: ^19.1.0
+  firebase_core: ^3.0.0
+  firebase_database: ^11.0.0
+  cloud_firestore: ^5.0.0
 
 dev_dependencies:
   flutter_test:
